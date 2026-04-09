@@ -8,6 +8,8 @@
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png?v=20260310r">
   <link rel="shortcut icon" href="./favicon.ico?v=20260310r">
   <link rel="apple-touch-icon" sizes="512x512" href="./apple-touch-icon.png?v=20260310r">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ia-writer-quattro@5/index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ia-writer-mono@5/index.css">
   <style>
     :root { --sab: env(safe-area-inset-bottom, 0px); }
 
@@ -62,6 +64,167 @@
       --heading-weight: normal;
       --heading-align: center;
       --text-align: justify;
+    }
+
+    /* Writer Theme - Inspired by iA Writer */
+    :root[data-theme="writer"] {
+      --bg-color: #F7F7F7;
+      --text-color: #1A1A1A;
+      --code-bg: #EDEDEC;
+      --pre-bg: #1D1F20;
+      --pre-color: #C5C9C6;
+      --blockquote-border: #B5B3B1;
+      --blockquote-color: #555;
+      --font-family: "iA Writer Quattro", "IBM Plex Mono", "SF Mono", "Menlo", monospace;
+      --font-size: 18px;
+      --line-height: 1.7;
+      --content-max-width: 800px;
+      --heading-weight: 700;
+      --heading-align: left;
+      --text-align: left;
+      --writer-accent: #15BDEC;
+      --writer-muted: #B5B3B1;
+      --writer-selection: #C1E7F4;
+      --provenance-bar-width: 0px;
+    }
+
+    :root[data-theme="writer"] body {
+      font-variant-ligatures: common-ligatures;
+      letter-spacing: -0.01em;
+    }
+
+    :root[data-theme="writer"] #editor {
+      padding: 40px 24px 120px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    :root[data-theme="writer"] .milkdown .editor.ProseMirror {
+      caret-color: var(--writer-accent);
+      min-height: 80vh;
+    }
+
+    :root[data-theme="writer"] .milkdown .editor ::selection {
+      background: var(--writer-selection);
+    }
+
+    :root[data-theme="writer"] .milkdown h1 {
+      font-size: 1.75em;
+      margin: 1.5em 0 0.5em;
+      letter-spacing: -0.02em;
+    }
+
+    :root[data-theme="writer"] .milkdown h2 {
+      font-size: 1.35em;
+      margin: 1.5em 0 0.4em;
+      letter-spacing: -0.015em;
+    }
+
+    :root[data-theme="writer"] .milkdown h3 {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin: 1.3em 0 0.4em;
+    }
+
+    :root[data-theme="writer"] .milkdown p {
+      margin-bottom: 0.9em;
+    }
+
+    :root[data-theme="writer"] .milkdown a {
+      color: var(--writer-accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(21, 189, 236, 0.3);
+    }
+
+    :root[data-theme="writer"] .milkdown a:hover {
+      border-bottom-color: var(--writer-accent);
+    }
+
+    :root[data-theme="writer"] .milkdown blockquote {
+      border-left: 3px solid var(--writer-accent);
+      padding-left: 1.2em;
+      color: var(--blockquote-color);
+    }
+
+    :root[data-theme="writer"] .milkdown code {
+      font-family: "iA Writer Mono", "IBM Plex Mono", "SF Mono", monospace;
+      font-size: 0.9em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 3px;
+    }
+
+    :root[data-theme="writer"] .milkdown hr {
+      border: none;
+      height: 1px;
+      background: #D4D4D4;
+      margin: 2em 0;
+    }
+
+    /* Focus mode - dim non-active paragraphs */
+    :root[data-theme="writer"] .milkdown.focus-mode .editor > *:not(.ProseMirror-focused) {
+      opacity: 0.25;
+      transition: opacity 0.2s ease;
+    }
+
+    :root[data-theme="writer"] .milkdown.focus-mode .editor > .ProseMirror-focused {
+      opacity: 1;
+    }
+
+    /* Tablet-first responsive (>= 768px touch devices) */
+    @media (pointer: coarse) {
+      :root[data-theme="writer"] {
+        --font-size: 20px;
+      }
+
+      :root[data-theme="writer"] #editor {
+        padding: 24px 20px 140px;
+      }
+
+      :root[data-theme="writer"] .milkdown .editor.ProseMirror {
+        min-height: 90vh;
+      }
+    }
+
+    /* Dark variant */
+    :root[data-theme="writer-dark"] {
+      --bg-color: #1D1F20;
+      --text-color: #C5C9C6;
+      --code-bg: #222424;
+      --pre-bg: #151617;
+      --pre-color: #C5C9C6;
+      --blockquote-border: #444;
+      --blockquote-color: #888;
+      --font-family: "iA Writer Quattro", "IBM Plex Mono", "SF Mono", "Menlo", monospace;
+      --font-size: 18px;
+      --line-height: 1.7;
+      --content-max-width: 800px;
+      --heading-weight: 600;
+      --heading-align: left;
+      --text-align: left;
+      --writer-accent: #15BDEC;
+      --writer-muted: #707070;
+      --writer-selection: rgba(21, 189, 236, 0.2);
+      --provenance-bar-width: 0px;
+    }
+
+    :root[data-theme="writer-dark"] #editor {
+      padding: 40px 24px 120px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    :root[data-theme="writer-dark"] .milkdown .editor.ProseMirror {
+      caret-color: var(--writer-accent);
+    }
+
+    :root[data-theme="writer-dark"] .milkdown .editor ::selection {
+      background: var(--writer-selection);
+    }
+
+    :root[data-theme="writer-dark"] .milkdown a {
+      color: var(--writer-accent);
+      text-decoration: none;
     }
 
     body {

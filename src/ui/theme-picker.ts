@@ -1,4 +1,4 @@
-export type Theme = 'default' | 'whitey';
+export type Theme = 'default' | 'whitey' | 'writer' | 'writer-dark';
 
 export interface ThemePickerOptions {
   defaultTheme?: Theme;
@@ -24,8 +24,16 @@ export class ThemePicker {
   }
 
   private loadSavedTheme(): Theme {
+    // URL parameter takes precedence (e.g., ?theme=writer)
+    try {
+      const urlTheme = new URLSearchParams(window.location.search).get('theme');
+      if (urlTheme === 'writer' || urlTheme === 'writer-dark' || urlTheme === 'whitey' || urlTheme === 'default') {
+        return urlTheme;
+      }
+    } catch { /* ignore */ }
+
     const saved = localStorage.getItem('proof-theme');
-    if (saved === 'whitey' || saved === 'default') {
+    if (saved === 'whitey' || saved === 'default' || saved === 'writer' || saved === 'writer-dark') {
       return saved;
     }
     return 'default';
