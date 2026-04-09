@@ -325,11 +325,49 @@ const agentKeymap = keymap({
 // Plugin
 // ============================================================================
 
+// ============================================================================
+// Paste-as-Link
+// ============================================================================
+
+const URL_PATTERN = /^https?:\/\/\S+$/;
+
+/**
+ * When text is selected and the clipboard contains a URL,
+ * wrap the selection in a markdown link instead of replacing it.
+ * Behavior matches Notion, Bear, and iA Writer.
+ */
+function handlePasteAsLink(
+  view: EditorView,
+  event: ClipboardEvent,
+): boolean {
+  const { from, to } = view.state.selection;
+  if (from === to) return false; // no selection — use default paste
+
+  const clipboardText = event.clipboardData?.getData('text/plain')?.trim();
+  if (!clipboardText || !URL_PATTERN.test(clipboardText)) return false;
+
+  event.preventDefault();
+
+  const linkMark = view.state.schema.marks.link;
+  if (!linkMark) return false;
+
+  const selectedText = getTextForRange(view.state.doc, { from, to });
+  const tr = view.state.tr
+    .replaceRangeWith(
+      from,
+      to,
+      view.state.schema.text(selectedText, [linkMark.create({ href: clipboardText })]),
+    );
+  view.dispatch(tr);
+  return true;
+}
+
 export const keybindingsPlugin = $prose(() => {
   return new Plugin({
     key: keybindingsKey,
     props: {
       handleKeyDown: agentKeymap.props.handleKeyDown,
+      handlePaste: handlePasteAsLink,
     },
   });
 });

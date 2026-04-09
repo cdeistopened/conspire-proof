@@ -965,7 +965,7 @@ class MarkPopoverController {
     };
 
     textarea.addEventListener('keydown', event => {
-      if ((event.key === 'Enter' && event.metaKey) || (this.renderMode === 'mobile-sheet' && event.key === 'Enter' && !event.shiftKey)) {
+      if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         submit();
       }
@@ -1093,7 +1093,7 @@ class MarkPopoverController {
       };
 
       replyBox.addEventListener('keydown', event => {
-        if ((event.key === 'Enter' && event.metaKey) || (this.renderMode === 'mobile-sheet' && event.key === 'Enter' && !event.shiftKey)) {
+        if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault();
           reply();
         }
