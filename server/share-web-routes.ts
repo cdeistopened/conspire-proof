@@ -172,11 +172,12 @@ function buildShareRuntimeConfigScript(slug: string, shareToken?: string | null)
     shareToken ? `window.__PROOF_CONFIG__.shareToken = ${JSON.stringify(shareToken)};` : '',
     commentUiDefaultMode ? `window.__PROOF_CONFIG__.commentUiDefaultMode = ${JSON.stringify(commentUiDefaultMode)};` : '',
   ].filter(Boolean);
-  if (configLines.length === 0) return '';
-  return `<script>
-window.__PROOF_CONFIG__ = window.__PROOF_CONFIG__ || {};
-${configLines.join('\n')}
-</script>`;
+  // Always inject the theme resolver for share pages (runs before editor JS)
+  const themeScript = `(function(){var t=(new URLSearchParams(location.search)).get('theme')||localStorage.getItem('proof-theme');if(t&&/^(writer|writer-dark|whitey|default)$/.test(t))document.documentElement.setAttribute('data-theme',t)})();`;
+  const configBlock = configLines.length > 0
+    ? `window.__PROOF_CONFIG__ = window.__PROOF_CONFIG__ || {};\n${configLines.join('\n')}`
+    : '';
+  return `<script>${themeScript}${configBlock ? '\n' + configBlock : ''}</script>`;
 }
 
 function injectShareHtmlDiscoveryTags(

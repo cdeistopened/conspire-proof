@@ -338,18 +338,19 @@ const URL_PATTERN = /^https?:\/\/\S+$/;
  */
 function handlePasteAsLink(
   view: EditorView,
-  event: ClipboardEvent,
+  event: Event,
 ): boolean {
   const { from, to } = view.state.selection;
   if (from === to) return false; // no selection — use default paste
 
-  const clipboardText = event.clipboardData?.getData('text/plain')?.trim();
+  const clipboardEvent = event as ClipboardEvent;
+  const clipboardText = clipboardEvent.clipboardData?.getData('text/plain')?.trim();
   if (!clipboardText || !URL_PATTERN.test(clipboardText)) return false;
-
-  event.preventDefault();
 
   const linkMark = view.state.schema.marks.link;
   if (!linkMark) return false;
+
+  event.preventDefault();
 
   const selectedText = getTextForRange(view.state.doc, { from, to });
   const tr = view.state.tr
