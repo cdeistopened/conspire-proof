@@ -128,8 +128,8 @@ async function main(): Promise<void> {
   setupWebSocket(wss);
   await startCollabRuntimeEmbedded(PORT);
 
-  server.listen(PORT, () => {
-    console.log(`[proof-sdk] listening on http://127.0.0.1:${PORT}`);
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`[proof-sdk] listening on http://0.0.0.0:${PORT}`);
   });
 }
 

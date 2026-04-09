@@ -31,7 +31,7 @@ export default defineConfig({
     port: 3000,
     strictPort: true,  // Fail if port in use instead of auto-incrementing
     open: false,
-    host: 'localhost',
+    host: '0.0.0.0',
     proxy: {
       '/assets': {
         target: 'http://localhost:4000',
@@ -39,11 +39,17 @@ export default defineConfig({
       },
       '/api': {
         target: 'http://localhost:4000',
-        changeOrigin: true,
       },
       '/d': {
         target: 'http://localhost:4000',
         changeOrigin: true,
+        bypass(req) {
+          // Serve index.html for browser navigation so the SPA JS can handle /d/:slug
+          const accept = req.headers.accept || '';
+          if (accept.includes('text/html')) {
+            return '/index.html';
+          }
+        },
       },
       '/new': {
         target: 'http://localhost:4000',
