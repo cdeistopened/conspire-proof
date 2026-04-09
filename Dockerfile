@@ -17,6 +17,7 @@ RUN mkdir -p /app/data
 ENV PORT=4000
 ENV DATABASE_PATH=/app/data/proof-share.db
 ENV PROOF_CORS_ALLOW_ORIGINS=*
+ENV COLLAB_EMBEDDED_WS=true
 
 EXPOSE 4000
 
