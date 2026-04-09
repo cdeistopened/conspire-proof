@@ -1,7 +1,8 @@
 /**
  * Keybindings Plugin for Proof
  *
- * Provides keyboard shortcuts for agent invocation:
+ * Provides keyboard shortcuts:
+ * - Cmd+Alt+M: Open comment composer (Google Docs-style)
  * - Cmd+Shift+P: Invoke agent on selection (opens input dialog)
  * - Cmd+Shift+K: Add comment for Proof to review later
  */
@@ -20,6 +21,7 @@ import {
 import {
   getUnresolvedComments,
 } from '../../formats/marks';
+import { openCommentComposer } from './mark-popover';
 import { getCurrentActor } from '../actor';
 import { getTextForRange } from '../utils/text-range';
 
@@ -130,6 +132,39 @@ function addProofCommentCommand(
   const actor = getCurrentActor();
   addComment(view, selectedText, actor, '[For @proof to review]', { from, to });
 
+  return true;
+}
+
+/**
+ * Open comment composer on selection (Cmd+Alt+M, Google Docs-style)
+ * If text is selected, comments on that range.
+ * If no selection (cursor), comments on the current block.
+ */
+function openCommentComposerCommand(
+  state: EditorState,
+  _dispatch: ((tr: unknown) => void) | undefined,
+  view: EditorView | undefined
+): boolean {
+  if (!view) return false;
+
+  let { from, to } = state.selection;
+
+  if (from === to) {
+    // No selection — expand to current text block
+    const $pos = state.doc.resolve(from);
+    for (let depth = $pos.depth; depth >= 0; depth--) {
+      const node = $pos.node(depth);
+      if (node.isTextblock) {
+        from = $pos.start(depth);
+        to = $pos.end(depth);
+        break;
+      }
+    }
+  }
+
+  if (from >= to) return false;
+
+  openCommentComposer(view, { from, to }, getCurrentActor());
   return true;
 }
 
@@ -278,6 +313,7 @@ export function executeQuickAction(view: EditorView, action: QuickAction): void 
 // ============================================================================
 
 const agentKeymap = keymap({
+  'Mod-Alt-m': openCommentComposerCommand,
   'Mod-Shift-p': invokeAgentCommand,
   'Mod-Shift-k': addProofCommentCommand,
   'Mod-]': navigateNextComment,
