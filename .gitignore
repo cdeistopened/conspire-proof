@@ -70,7 +70,6 @@ test-results/
 # Playwright MCP screenshots
 .playwright-mcp/
 
-# Package locks (keep package.json)
-package-lock.json
+# Package locks — NOT ignored (needed for Docker builds)
 CODEX-IMPLEMENT.md
 MOBILE-ACTION-BAR-PLAN.md
