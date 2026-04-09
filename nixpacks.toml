@@ -1,11 +1,11 @@
 [phases.setup]
 nixPkgs = ["python3", "gcc", "gnumake"]
 
+[phases.install]
+cmds = ["npm ci --include=dev"]
+
 [phases.build]
-cmds = ["npm ci", "npm run build"]
+cmds = ["npm run build"]
 
 [start]
-cmd = "npm start"
-
-[variables]
-NODE_ENV = "production"
+cmd = "npx tsx server/index.ts"
