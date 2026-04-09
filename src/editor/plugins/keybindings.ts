@@ -326,49 +326,136 @@ const agentKeymap = keymap({
 // ============================================================================
 
 // ============================================================================
-// Paste-as-Link
+// Cmd+K Link Dialog
 // ============================================================================
 
-const URL_PATTERN = /^https?:\/\/\S+$/;
-
 /**
- * When text is selected and the clipboard contains a URL,
- * wrap the selection in a markdown link instead of replacing it.
- * Behavior matches Notion, Bear, and iA Writer.
+ * Insert link (Cmd+K). Select text, press Cmd+K, paste URL, hit Enter.
+ * If text is selected, it becomes the link text.
+ * If no selection, prompts for both URL and text.
  */
-function handlePasteAsLink(
-  view: EditorView,
-  event: Event,
+function insertLinkCommand(
+  state: EditorState,
+  _dispatch: ((tr: unknown) => void) | undefined,
+  view: EditorView | undefined,
 ): boolean {
-  const { from, to } = view.state.selection;
-  if (from === to) return false; // no selection — use default paste
+  if (!view) return false;
 
-  const clipboardEvent = event as ClipboardEvent;
-  const clipboardText = clipboardEvent.clipboardData?.getData('text/plain')?.trim();
-  if (!clipboardText || !URL_PATTERN.test(clipboardText)) return false;
+  const { from, to } = state.selection;
+  const hasSelection = from !== to;
+  const selectedText = hasSelection ? getTextForRange(state.doc, { from, to }) : '';
 
-  const linkMark = view.state.schema.marks.link;
-  if (!linkMark) return false;
+  // Create floating input near the selection/cursor
+  const coords = view.coordsAtPos(from);
+  const existing = document.querySelector('.proof-link-dialog');
+  if (existing) existing.remove();
 
-  event.preventDefault();
+  const dialog = document.createElement('div');
+  dialog.className = 'proof-link-dialog';
+  dialog.style.cssText = `
+    position: fixed;
+    top: ${coords.top + 28}px;
+    left: ${Math.max(12, Math.min(coords.left - 120, window.innerWidth - 320))}px;
+    z-index: 300;
+    background: white;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+  `;
 
-  const selectedText = getTextForRange(view.state.doc, { from, to });
-  const tr = view.state.tr
-    .replaceRangeWith(
-      from,
-      to,
-      view.state.schema.text(selectedText, [linkMark.create({ href: clipboardText })]),
+  const input = document.createElement('input');
+  input.type = 'url';
+  input.placeholder = 'Paste link...';
+  input.style.cssText = `
+    flex: 1;
+    border: 1px solid #E0E0E0;
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-size: 14px;
+    outline: none;
+    min-width: 220px;
+    font-family: inherit;
+  `;
+
+  const applyBtn = document.createElement('button');
+  applyBtn.textContent = 'Apply';
+  applyBtn.style.cssText = `
+    background: #1A1A1A;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  `;
+
+  const apply = () => {
+    const url = input.value.trim();
+    if (!url) return;
+
+    const linkMark = view.state.schema.marks.link;
+    if (!linkMark) { dialog.remove(); return; }
+
+    const text = selectedText || url;
+    const tr = view.state.tr.replaceRangeWith(
+      from, hasSelection ? to : from,
+      view.state.schema.text(text, [linkMark.create({ href: url })]),
     );
-  view.dispatch(tr);
+    view.dispatch(tr);
+    dialog.remove();
+    view.focus();
+  };
+
+  const dismiss = () => {
+    dialog.remove();
+    view.focus();
+  };
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); apply(); }
+    if (e.key === 'Escape') { e.preventDefault(); dismiss(); }
+  });
+
+  applyBtn.addEventListener('click', apply);
+
+  // Close on outside click
+  const onOutside = (e: MouseEvent) => {
+    if (!dialog.contains(e.target as Node)) {
+      dismiss();
+      document.removeEventListener('mousedown', onOutside);
+    }
+  };
+  setTimeout(() => document.addEventListener('mousedown', onOutside), 0);
+
+  dialog.appendChild(input);
+  dialog.appendChild(applyBtn);
+  document.body.appendChild(dialog);
+
+  requestAnimationFrame(() => input.focus());
   return true;
 }
+
+const agentKeymapWithLink = keymap({
+  'Mod-k': insertLinkCommand,
+});
 
 export const keybindingsPlugin = $prose(() => {
   return new Plugin({
     key: keybindingsKey,
     props: {
-      handleKeyDown: agentKeymap.props.handleKeyDown,
-      handlePaste: handlePasteAsLink,
+      handleKeyDown: (view, event) => {
+        // Cmd+K link dialog first
+        if (agentKeymapWithLink.props.handleKeyDown?.(view, event)) return true;
+        // Then existing keybindings
+        return agentKeymap.props.handleKeyDown?.(view, event) ?? false;
+      },
     },
   });
 });
