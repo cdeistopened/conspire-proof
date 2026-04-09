@@ -1,6 +1,6 @@
 FROM node:22-slim
 
-# Install build deps for better-sqlite3
+# Install build deps for better-sqlite3 native module
 RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -8,10 +8,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Copy everything including pre-built dist/
 COPY . .
-
-# Build the web frontend
-RUN npm run build
 
 # Create data directory for SQLite
 RUN mkdir -p /app/data
