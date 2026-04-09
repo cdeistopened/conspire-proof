@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import path from 'path';
@@ -42,7 +43,12 @@ async function main(): Promise<void> {
   const wss = new WebSocketServer({ server, path: '/ws' });
   const allowedCorsOrigins = parseAllowedCorsOrigins();
 
+  app.use(compression());
   app.use(express.json({ limit: '10mb' }));
+
+  // Static assets with long cache (Vite hashes filenames, so safe to cache aggressively)
+  const staticOpts = { maxAge: '7d', immutable: true };
+  app.use('/assets', express.static(path.join(__dirname, '..', 'dist', 'assets'), staticOpts));
   app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use(express.static(path.join(__dirname, '..', 'dist')));
 
