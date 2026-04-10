@@ -14,6 +14,7 @@ import { Fragment } from '@milkdown/kit/prose/model';
 import type { Node as ProseMirrorNode, MarkType } from '@milkdown/kit/prose/model';
 import { ySyncPluginKey } from 'y-prosemirror';
 import { buildTextIndex, getTextForRange, mapTextOffsetsToRange, resolveQuoteRange } from '../utils/text-range';
+import { commentStyleForActor } from '../actor-colors';
 import { SHARE_CONTENT_FILTER_ALLOW_META } from './share-content-filter';
 
 import {
@@ -3116,7 +3117,7 @@ function createDecorations(
       case 'comment': {
         const data = mark.data as CommentData;
         if (data?.resolved) continue;
-        style = isActive ? STYLES.comment_active : STYLES.comment;
+        style = commentStyleForActor(mark.by, isActive);
         cssClass = `mark-comment ${isActive ? 'mark-active' : ''}`;
         break;
       }

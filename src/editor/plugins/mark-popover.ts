@@ -27,6 +27,7 @@ import {
   type ReplaceData,
 } from '../../formats/marks';
 import { getCurrentActor } from '../actor';
+import { colorForActor } from '../actor-colors';
 import { shouldUseCommentUiV2 } from './comment-ui-mode';
 import {
   getVisualViewportHeight,
@@ -1035,12 +1036,29 @@ class MarkPopoverController {
 
     thread.forEach(entry => {
       const entryData = entry.data as CommentData | undefined;
+      const color = colorForActor(entry.by);
       const entryEl = document.createElement('div');
       entryEl.className = 'mark-popover-entry';
+      entryEl.style.borderLeft = `3px solid ${color.borderActive}`;
+      entryEl.style.paddingLeft = '10px';
 
       const meta = document.createElement('div');
       meta.className = 'mark-popover-meta';
-      meta.textContent = `${getActorName(entry.by)} • ${formatTimestamp(entry.at)}`;
+
+      const dot = document.createElement('span');
+      dot.className = 'mark-popover-actor-dot';
+      dot.style.background = color.borderActive;
+
+      const name = document.createElement('span');
+      name.className = 'mark-popover-actor-name';
+      name.textContent = getActorName(entry.by);
+      name.style.color = color.text;
+
+      const sep = document.createTextNode(' • ');
+      const time = document.createElement('span');
+      time.textContent = formatTimestamp(entry.at);
+
+      meta.append(dot, name, sep, time);
 
       const body = document.createElement('div');
       body.className = 'mark-popover-body';
@@ -1643,12 +1661,15 @@ class MarkPopoverController {
 
   private createMobileCommentCard(mark: Mark): HTMLButtonElement {
     const data = mark.data as CommentData | undefined;
+    const color = colorForActor(mark.by);
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'mark-mobile-card';
     card.setAttribute('data-mark-id', mark.id);
+    card.style.borderLeft = `3px solid ${color.borderActive}`;
     const actor = document.createElement('strong');
     actor.textContent = getActorName(mark.by);
+    actor.style.color = color.text;
     const preview = document.createElement('span');
     preview.textContent = (data?.text ?? '').slice(0, 90) || 'Comment';
     card.append(actor, preview);

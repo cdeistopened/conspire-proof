@@ -1,6 +1,6 @@
 {
   "bundleVersion": "0.1.0",
-  "commitSha": "ae341f6fa73a8877080e9b5067c5b0f48ebeaf4b",
-  "releaseDate": "2026-04-09T20:53:21.786Z",
+  "commitSha": "63910005961cc5323cdbf3fffdfb18f7d8dfb09f",
+  "releaseDate": "2026-04-10T20:01:27.540Z",
   "compatibilityNote": "Opaque web bundle for explicit external consumers. No shared runtime source is supported."
 }
