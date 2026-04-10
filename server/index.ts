@@ -46,11 +46,15 @@ async function main(): Promise<void> {
   app.use(compression());
   app.use(express.json({ limit: '10mb' }));
 
-  // Static assets with long cache (Vite hashes filenames, so safe to cache aggressively)
-  const staticOpts = { maxAge: '7d', immutable: true };
+  // Static assets: short cache window with ETag revalidation. Vite is
+  // configured to NOT hash filenames (editor.js is embedded by external
+  // hosts via a predictable URL), so `immutable` would pin the old
+  // bundle in browsers for days after a deploy. 1h + ETag lets fresh
+  // content propagate fast while still caching most requests.
+  const staticOpts = { maxAge: '1h' };
   app.use('/assets', express.static(path.join(__dirname, '..', 'dist', 'assets'), staticOpts));
-  app.use(express.static(path.join(__dirname, '..', 'public')));
-  app.use(express.static(path.join(__dirname, '..', 'dist')));
+  app.use(express.static(path.join(__dirname, '..', 'public'), staticOpts));
+  app.use(express.static(path.join(__dirname, '..', 'dist'), staticOpts));
 
   app.use((req, res, next) => {
     const originHeader = req.header('origin');
