@@ -14,7 +14,6 @@ import { Fragment } from '@milkdown/kit/prose/model';
 import type { Node as ProseMirrorNode, MarkType } from '@milkdown/kit/prose/model';
 import { ySyncPluginKey } from 'y-prosemirror';
 import { buildTextIndex, getTextForRange, mapTextOffsetsToRange, resolveQuoteRange } from '../utils/text-range';
-import { commentStyleForActor } from '../actor-colors';
 import { SHARE_CONTENT_FILTER_ALLOW_META } from './share-content-filter';
 
 import {
@@ -39,6 +38,7 @@ import {
   getPendingSuggestions,
   calculateAuthorshipStats,
   canonicalizeStoredMarks,
+  getMarkColor,
 } from '../../formats/marks.js';
 
 // ============================================================================
@@ -3117,7 +3117,10 @@ function createDecorations(
       case 'comment': {
         const data = mark.data as CommentData;
         if (data?.resolved) continue;
-        style = commentStyleForActor(mark.by, isActive);
+        const hex = getMarkColor(mark.by);
+        // 4D = ~30% alpha (idle), 80 = ~50% alpha (active)
+        const alpha = isActive ? '80' : '4D';
+        style = `background-color: ${hex}${alpha}; border-bottom: 2px solid ${hex};`;
         cssClass = `mark-comment ${isActive ? 'mark-active' : ''}`;
         break;
       }
@@ -3125,7 +3128,8 @@ function createDecorations(
       case 'insert': {
         const data = mark.data as InsertData;
         if (data?.status === 'pending') {
-          style = STYLES.insert;
+          const hex = getMarkColor(mark.by);
+          style = `background-color: ${hex}40; border-bottom: 2px solid ${hex};`;
           cssClass = 'mark-insert';
         }
         break;

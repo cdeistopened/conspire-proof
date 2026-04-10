@@ -15,9 +15,6 @@ import type { EditorView } from '@milkdown/kit/prose/view';
 import type { Node as ProseMirrorNode } from '@milkdown/kit/prose/model';
 import {
   getMarkColor,
-  isHuman,
-  isAI,
-  isSystem,
   type CommentData,
   type DeleteData,
   type InsertData,
@@ -126,29 +123,38 @@ function getAuthoredBlockColor(
 ): string | null {
   const authored = marksByKind.get('authored') ?? [];
 
-  let human = 0;
-  let ai = 0;
-  let system = 0;
+  // Tally overlap per actor id, so multi-author docs show each person's
+  // color in the gutter instead of collapsing everyone to mint/lavender.
+  const byActor = new Map<string, number>();
+  let markedTotal = 0;
 
   for (const mark of authored) {
     if (!blockIntersectsMark(blockFrom, blockTo, mark)) continue;
     const overlap = Math.max(0, Math.min(blockTo, mark.to) - Math.max(blockFrom, mark.from));
     if (overlap <= 0) continue;
-    if (isHuman(mark.mark.by)) {
-      human += overlap;
-    } else if (isAI(mark.mark.by)) {
-      ai += overlap;
-    } else if (isSystem(mark.mark.by)) {
-      system += overlap;
+    const actor = mark.mark.by ?? '';
+    byActor.set(actor, (byActor.get(actor) ?? 0) + overlap);
+    markedTotal += overlap;
+  }
+
+  // Unmarked content falls back to the AI bucket, matching prior behavior.
+  const unmarked = Math.max(0, blockTextLength - markedTotal);
+  if (unmarked > 0) {
+    byActor.set('ai:unknown', (byActor.get('ai:unknown') ?? 0) + unmarked);
+  }
+
+  if (byActor.size === 0) return null;
+
+  let dominantActor = '';
+  let maxOverlap = 0;
+  for (const [actor, overlap] of byActor) {
+    if (overlap > maxOverlap) {
+      maxOverlap = overlap;
+      dominantActor = actor;
     }
   }
 
-  const unmarked = Math.max(0, blockTextLength - (human + ai + system));
-  ai += unmarked;
-
-  if (system > 0) return getMarkColor('system');
-  if (human === 0 && ai === 0) return null;
-  return ai >= human ? getMarkColor('ai') : getMarkColor('human');
+  return dominantActor ? getMarkColor(dominantActor) : null;
 }
 
 /**
