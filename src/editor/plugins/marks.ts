@@ -38,7 +38,7 @@ import {
   getPendingSuggestions,
   calculateAuthorshipStats,
   canonicalizeStoredMarks,
-  getMarkColor,
+  getHighlightColor,
 } from '../../formats/marks.js';
 
 // ============================================================================
@@ -3117,7 +3117,7 @@ function createDecorations(
       case 'comment': {
         const data = mark.data as CommentData;
         if (data?.resolved) continue;
-        const hex = getMarkColor(mark.by);
+        const hex = getHighlightColor(mark.by);
         // 4D = ~30% alpha (idle), 80 = ~50% alpha (active)
         const alpha = isActive ? '80' : '4D';
         style = `background-color: ${hex}${alpha}; border-bottom: 2px solid ${hex};`;
@@ -3128,7 +3128,7 @@ function createDecorations(
       case 'insert': {
         const data = mark.data as InsertData;
         if (data?.status === 'pending') {
-          const hex = getMarkColor(mark.by);
+          const hex = getHighlightColor(mark.by);
           style = `background-color: ${hex}40; border-bottom: 2px solid ${hex};`;
           cssClass = 'mark-insert';
         }

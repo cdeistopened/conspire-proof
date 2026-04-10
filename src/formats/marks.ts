@@ -36,11 +36,25 @@ const KNOWN_COLORS: Record<string, string> = {
 };
 
 /**
- * Generate a consistent color from a string (for unknown kinds)
- * Uses a simple hash to pick from a palette of distinguishable colors
+ * djb2-style hash. Shared by getMarkColor and getHighlightColor so a
+ * given key lands in the same slot index across both palettes — Maria's
+ * gutter color and Maria's highlight color are drawn from the same hash
+ * bucket, just tuned for different surfaces.
+ */
+function hashKey(key: string): number {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash) + key.charCodeAt(i);
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Generate a consistent color from a string (for unknown kinds).
+ * Material primary palette — designed for saturated 1px gutter bars.
  */
 function generateColor(key: string): string {
-  // Palette of distinguishable colors (avoiding the known ones)
   const palette = [
     '#9C27B0',  // Purple
     '#00BCD4',  // Cyan
@@ -51,22 +65,40 @@ function generateColor(key: string): string {
     '#009688',  // Teal
     '#673AB7',  // Deep Purple
   ];
-
-  // Simple hash function
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = ((hash << 5) - hash) + key.charCodeAt(i);
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-
-  return palette[Math.abs(hash) % palette.length];
+  return palette[hashKey(key) % palette.length];
 }
 
 /**
- * Get color for any key - returns known color or generates consistent one
+ * Get color for any key - returns known color or generates consistent one.
+ * Used by the heatmap gutter where solid-saturation colors read well.
  */
 export function getMarkColor(key: string): string {
   return KNOWN_COLORS[key] || generateColor(key);
+}
+
+/**
+ * Per-key color tuned for inline text highlights (comment backgrounds,
+ * insert-mark backgrounds, popover stripes). The Material palette used
+ * by getMarkColor goes muddy when applied at ~30% alpha behind prose,
+ * and it puts Purple + Deep Purple adjacent which collide as washes.
+ *
+ * This palette is 8 Tailwind-500 hues at roughly 45° intervals around
+ * the color wheel, mid-lightness, picked to stay distinguishable when
+ * dropped behind text. Uses the same hashKey() as getMarkColor so a
+ * given actor always lands in the same slot index across both palettes.
+ */
+export function getHighlightColor(key: string): string {
+  const palette = [
+    '#F59E0B',  // amber
+    '#F97316',  // orange
+    '#EF4444',  // red
+    '#EC4899',  // pink
+    '#8B5CF6',  // violet
+    '#3B82F6',  // blue
+    '#06B6D4',  // cyan
+    '#10B981',  // emerald
+  ];
+  return palette[hashKey(key) % palette.length];
 }
 
 /**

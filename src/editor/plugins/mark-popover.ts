@@ -27,7 +27,7 @@ import {
   type ReplaceData,
 } from '../../formats/marks';
 import { getCurrentActor } from '../actor';
-import { getMarkColor } from '../../formats/marks';
+import { getHighlightColor } from '../../formats/marks';
 import { shouldUseCommentUiV2 } from './comment-ui-mode';
 import {
   getVisualViewportHeight,
@@ -1036,7 +1036,7 @@ class MarkPopoverController {
 
     thread.forEach(entry => {
       const entryData = entry.data as CommentData | undefined;
-      const hex = getMarkColor(entry.by);
+      const hex = getHighlightColor(entry.by);
       const entryEl = document.createElement('div');
       entryEl.className = 'mark-popover-entry';
       entryEl.style.borderLeft = `3px solid ${hex}`;
@@ -1661,7 +1661,7 @@ class MarkPopoverController {
 
   private createMobileCommentCard(mark: Mark): HTMLButtonElement {
     const data = mark.data as CommentData | undefined;
-    const hex = getMarkColor(mark.by);
+    const hex = getHighlightColor(mark.by);
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'mark-mobile-card';
